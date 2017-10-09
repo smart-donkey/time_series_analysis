@@ -5,10 +5,11 @@ from datetime import date
 from datetime import timedelta
 import low_interface as api
 from low_interface import call_raw_api
-
+from yaml import dump, load
+import numpy as np
 
 url = 'https://sapi.k780.com'
-date_format = '%Y%m%d'
+date_format = '%Y%m'
 
 
 def query_list(params=api.st_list_params):
@@ -29,6 +30,7 @@ def query_all(start, end, file_name='history', symbol='sh601398'):
             params['symbol'] = symbol
             results = request_history_data(start - timedelta(di), params)
             if results:
+                print(results)
                 contents_dict = results[u'lists'][0]
                 if writer is None:
                     writer = csv.DictWriter(csv_file, fieldnames=contents_dict.keys())
@@ -36,8 +38,18 @@ def query_all(start, end, file_name='history', symbol='sh601398'):
 
                 writer.writerow(contents_dict)
 
-            time.sleep(80)
+            time.sleep(1)
 
 if __name__ == '__main__':
     now = date.today()
-    query_all(now - timedelta(1), now - timedelta(5), symbol='sh601398')
+    # stocklist = query_list()
+    with open('log1.yaml', 'r') as f:
+         stocklist = load(f)
+
+    print(stocklist)
+    for l in stocklist['lists']:
+        print(l)
+
+    #
+
+    # query_all(now -timedelta(9), now - timedelta(10), symbol='sh601398')
