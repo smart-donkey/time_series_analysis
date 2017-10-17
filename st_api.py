@@ -7,6 +7,7 @@ import low_interface as api
 from low_interface import call_raw_api
 from yaml import dump, load
 import numpy as np
+import os
 
 url = 'https://sapi.k780.com'
 date_format = '%Y%m%d'
@@ -47,41 +48,56 @@ def query_all(start, end, file_name='st/history', symbol='sh601398', finished=[]
 
     finished.append(symbol)
 
+def get_downloaded_list(download_path):
+    downloaded_symbols = []
+    for file in os.listdir(download_path):
+         downloaded_symbols.append(file.split('_')[1])
 
-if __name__ == '__main__':
-    now = date.today()
-    # stocklist = query_list()
-    with open('log1.yaml', 'r') as f:
-         stock_list = load(f)
+    return downloaded_symbols
 
-    st = stock_list['lists']
-    symbols = []
-    for s in st:
-        code = s['symbol']
-        if code.find('sh6') > -1 or code.find('sz0') > -1:
-            symbols.append(code)
 
-    print(len(symbols))
-    st = symbols
-    np.random.seed(19)
-    marks = np.random.choice(len(st), 500)
-    marks = list(marks)
-
-    parts = []
-    for m in marks:
-        print(m)
-        print(st[m])
-        parts.append(st[m])
-    with open('total_list.yaml', 'w') as f:
-        dump(parts, f)
-
-    with open('finished_list.yaml', 'r') as f:
-        finished_list = load(f)
-
-    for m in marks:
+def download_by_symbols(parts, finished_list):
+    for m in parts:
         start = date(2017, 9, 30)
         interval = 100
-        if st[m] in finished_list:
+        if m in finished_list:
             continue
-        query_all(start - timedelta(1), start - timedelta(interval + 1), symbol=st[m], finished=finished_list)
+        query_all(start - timedelta(1), start - timedelta(interval + 1), symbol=m, finished=finished_list)
         print('finished list,', finished_list)
+
+
+if __name__ == '__main__':
+    # now = date.today()
+    # # stocklist = query_list()
+    # with open('log1.yaml', 'r') as f:
+    #      stock_list = load(f)
+    #
+    # st = stock_list['lists']
+    # symbols = []
+    # for s in st:
+    #     code = s['symbol']
+    #     if code.find('sh6') > -1 or code.find('sz0') > -1:
+    #         symbols.append(code)
+    #
+    # print(len(symbols))
+    # st = symbols
+    # np.random.seed(19)
+    # marks = np.random.choice(len(st), 500)
+    # marks = list(marks)
+    #
+    # parts = []
+    # for m in marks:
+    #     print(m)
+    #     print(st[m])
+    #     parts.append(st[m])
+    # with open('total_list.yaml', 'w') as f:
+    #     dump(parts, f)
+
+    parts = []
+    with open('wanted_list.yaml', 'r') as f:
+        parts = load(f)
+
+    finished_list = get_downloaded_list('st')
+    print('finished_list', finished_list)
+
+    download_by_symbols(parts, finished_list)
